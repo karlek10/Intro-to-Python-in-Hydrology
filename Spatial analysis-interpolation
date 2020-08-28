@@ -1,0 +1,33 @@
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import pandas as pd
+import seaborn as sns
+import numpy as np
+from scipy.interpolate import griddata
+import geopandas as gpd
+
+meteo_loc = pd.read_csv("meteo_stat.csv", usecols = ["name", "real_name", "lat", "long"]).sort_values(by = ["name"])
+precip_basin = precip_basin = pd.read_csv("precip_bednja_basin.csv")
+basin_shape = gpd.read_file('Sliv_Bednje\\Sliv_Bednje.shp').to_crs('EPSG:4326')
+
+precip_basin = pd.DataFrame(precip_basin.mean(axis = 0)).rename_axis('name').reset_index().sort_values(by=["name"]).rename(columns = {0: "Mean"})
+
+meteo_loc = pd.merge(meteo_loc, precip_basin, on="name")
+#generate the desired grid, where rainfall is to be interpolated
+X,Y = np.meshgrid(np.linspace(meteo_loc["long"].min()-0.05,meteo_loc["long"].max()+0.05,2000), np.linspace(meteo_loc["lat"].min()-0.05,meteo_loc["lat"].max()+0.05,2000))
+   
+#perform the interpolation
+grid_rain = sp.interpolate.Rbf(meteo_loc["long"],meteo_loc["lat"], meteo_loc["Mean"])
+
+spatial_rain = grid_rain(X,Y)
+
+fig, ax = plt.subplots(figsize = (16, 8))
+
+gg = ax.imshow(spatial_rain, extent = (meteo_loc["long"].min()-0.02,meteo_loc["long"].max()+0.07, meteo_loc["lat"].min()-0.03,meteo_loc["lat"].max()+0.03 ), cmap=cm.RdBu, alpha = 0.5, origin = 'lower')
+ax.scatter(meteo_loc["long"], meteo_loc["lat"], color = "black")
+for i, (x,y) in enumerate(zip (meteo_loc["long"], meteo_loc["lat"])):
+    label = meteo_loc["real_name"][i]
+    ax.annotate(label, (x,y), textcoords = "offset points", xytext = (2,3))
+
+basin_shape.geometry.boundary.plot(ax = ax, alpha = 1, color = None, edgecolor =  "black")
+fig.colorbar(gg, format = '%.1f')
