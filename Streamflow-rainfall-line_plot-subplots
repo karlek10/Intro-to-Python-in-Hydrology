@@ -1,0 +1,65 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_style("whitegrid")
+precip_basin = pd.DataFrame(pd.read_csv("precip_bednja_basin.csv", parse_dates=['Date']).mean(axis = 1, numeric_only=True), columns = ["precip"])
+streamflow = pd.read_csv("streamflow.csv", parse_dates=['Date'])
+
+streamflow = pd.concat([streamflow, precip_basin], axis = 1).set_index(["Date"])
+winter = streamflow[(streamflow.index.month >= 1) &  (streamflow.index.month <= 3)]
+winter = winter.reset_index().resample("M", on="Date").agg({"Ludbreg": np.mean, "precip": np.sum}).dropna().reset_index()
+spring = streamflow[(streamflow.index.month >= 4) &  (streamflow.index.month <= 6)]
+spring = spring.reset_index().resample("M", on="Date").agg({"Ludbreg": np.mean, "precip": np.sum}).dropna().reset_index()
+summer = streamflow[(streamflow.index.month >= 7) &  (streamflow.index.month <= 9)]
+summer = summer.reset_index().resample("M", on="Date").agg({"Ludbreg": np.mean, "precip": np.sum}).dropna().reset_index()
+autumn= streamflow[(streamflow.index.month >= 10) &  (streamflow.index.month <= 12)]
+autumn = autumn.reset_index().resample("M", on="Date").agg({"Ludbreg": np.mean, "precip": np.sum}).dropna().reset_index()
+
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows = 2, ncols = 2, figsize = (14,8), tight_layout=True)
+
+ax1a = ax1.twinx()
+sns.lineplot(x = winter.index, y= winter["Ludbreg"], data = winter, color="red", ax=ax1)
+ax1.set(ylim=(0, 80))
+ax1.set_ylabel("Streamflow [$m^3$/s]")
+ax1.set_xlabel("Winter months since 2000")
+sns.lineplot(x = winter.index, y= winter["precip"], data = winter, color="blue", ax=ax1a)
+ax1a.set(ylim=(0, 400))
+ax1a.invert_yaxis()
+ax1a.fill_between(winter.index, 0, winter["precip"], alpha = 0.8)
+ax1a.set_ylabel("Rainfall [mm]")  
+
+ax2a = ax2.twinx()
+sns.lineplot(x = spring.index, y= spring["Ludbreg"], data = spring, color="red", ax=ax2)
+ax2.set(ylim=(0, 80))
+ax2.set_ylabel("Streamflow [$m^3$/s]")
+ax2.set_xlabel("Spring months since 2000")
+sns.lineplot(x = spring.index, y= spring["precip"], data = spring, color="blue", ax=ax2a)
+ax2a.set(ylim=(0, 400))
+ax2a.invert_yaxis()
+ax2a.fill_between(spring.index, 0, spring["precip"], alpha = 0.8)
+ax2a.set_ylabel("Rainfall [mm]")  
+
+ax3a = ax3.twinx()
+sns.lineplot(x = summer.index, y= summer["Ludbreg"], data = summer, color="red", ax=ax3)
+ax3.set(ylim=(0, 80))
+ax3.set_ylabel("Streamflow [$m^3$/s]")
+ax3.set_xlabel("Summer months since 2000")
+sns.lineplot(x = summer.index, y= summer["precip"], data = summer, color="blue", ax=ax3a)
+ax3a.set(ylim=(0, 400))
+ax3a.invert_yaxis()
+ax3a.fill_between(summer.index, 0, summer["precip"], alpha = 0.8)
+ax3a.set_ylabel("Rainfall [mm]")  
+
+ax4a = ax4.twinx()
+sns.lineplot(x = autumn.index, y= autumn["Ludbreg"], data = autumn, color="red", ax=ax4)
+ax4.set(ylim=(0, 80))
+ax4.set_ylabel("Streamflow [$m^3$/s]")
+ax4.set_xlabel("Autumn months since 2000")
+sns.lineplot(x = autumn.index, y= autumn["precip"], data = autumn, color="blue", ax=ax4a)
+ax4a.set(ylim=(0, 400))
+ax4a.invert_yaxis()
+ax4a.fill_between(autumn.index, 0, autumn["precip"], alpha = 0.8)
+ax4a.set_ylabel("Rainfall [mm]")
