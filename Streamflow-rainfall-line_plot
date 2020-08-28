@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_style("whitegrid")
+precip_basin = pd.DataFrame(pd.read_csv("precip_bednja_basin.csv", parse_dates=['Date']).mean(axis = 1, numeric_only=True), columns = ["precip"])
+streamflow = pd.read_csv("streamflow.csv", parse_dates=['Date'])
+
+streamflow = pd.concat([streamflow, precip_basin], axis = 1)
+
+streamflow = streamflow.resample("M", on="Date").agg({"Ludbreg": np.mean, "precip": np.sum})
+
+fig, ax1 = plt.subplots(figsize=(14,6))
+
+ax2 = ax1.twinx()
+
+sns.lineplot(x = streamflow.index, y= "precip", data = streamflow, color="blue", ax=ax2)
+ax2.fill_between(streamflow.index, 0, streamflow["precip"], alpha = 0.8)
+ax2.set(ylim=(0, 400))
+ax2.set_ylabel("Rainfall [mm]")
+
+ax2.invert_yaxis()
+
+sns.lineplot(x = streamflow.index, y= "Ludbreg", data = streamflow, color="red", ax=ax1)
+ax1.set(ylim=(0, 80))
+ax1.set_ylabel("Streamflow [$m^3$/s]")
+ax1.set_xlabel("Year")
