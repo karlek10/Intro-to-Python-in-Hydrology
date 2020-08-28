@@ -1,0 +1,19 @@
+mport matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+
+precip_varazdin = pd.read_csv("precip_varazdin.csv", names = ["Date", "Rainfall"])
+precip_varazdin['Date'] = pd.to_datetime(precip_varazdin["Date"])
+precip_varazdin = precip_varazdin.set_index('Date')
+
+
+precip_varazdin = precip_varazdin.resample("Y").sum()
+
+
+ax = sns.barplot(x=precip_varazdin.index, y=precip_varazdin["Rainfall"], color = "royalblue")
+ax.set_xlabel("Year")
+ax.set_ylabel("Rainfall [mm]")
+ax.set_xticklabels(labels = precip_varazdin.index.year, rotation = 45)
