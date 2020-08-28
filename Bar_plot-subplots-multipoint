@@ -1,0 +1,24 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+precip_basin = precip_basin = pd.read_csv("precip_bednja_basin.csv", usecols = ["Date", "Varazdin", "Ludbreg", "Donji Macelj", "Kalnik", "Krizovljan", "Semovec", "Gornja Rijeka", "Rasinja"])
+precip_basin["Date"] = pd.to_datetime(precip_basin["Date"])
+precip_basin = precip_basin.set_index("Date")
+precip_basin = precip_basin.resample("Y").sum()
+
+fig1, ax = plt.subplots(2,4, figsize = (18,8), tight_layout=True, sharex = True)
+
+for i, (ax, value, name) in enumerate(zip(ax.flatten(), precip_basin.values.T, precip_basin.columns)):
+    ax.set_xticks(precip_basin.index.year)
+    ax.set_xticklabels(labels = precip_basin.index.year.values, rotation=60)
+    ax.bar(precip_basin.index.year, precip_basin[name], label=name, color = "royalblue")
+    
+    ax.hlines(precip_basin[name].mean(), 1999.5, 2018.5, color="green", label="Ar. mean", ls = "--")
+    ax.hlines(precip_basin[name].median(), 1999.5, 2018.5, color="red", label="Ar. mean", ls = ":")
+    if i >3:
+        ax.set_xlabel ("Year")
+    ax.set_ylabel("Rainfall [mm]")
+    ax.legend(shadow=True, loc="upper left")
